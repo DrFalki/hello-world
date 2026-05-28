@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anmeldung · Ticket System</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .cols { display:grid; grid-template-columns: 360px 1fr; gap:18px; align-items:start; }
+    @media (max-width: 900px){ .cols{ grid-template-columns:1fr; } }
+    .stats { display:grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-bottom:16px; }
+    .catbtns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .catbtn { border:0; border-radius:12px; padding:14px; color:#fff; font-weight:700; cursor:pointer; text-align:left; }
+    .catbtn small { display:block; font-weight:500; opacity:.85; font-size:11px; margin-top:3px; }
+    .tickrow td:first-child { width: 90px; }
+    .actions { display:flex; gap:6px; flex-wrap:wrap; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> Anmeldung</div>
+    <nav>
+      <a href="/display.html" target="_blank">Display öffnen</a>
+      <a href="/kiosk.html" target="_blank">Kiosk</a>
+      <a href="/">Hub</a>
+    </nav>
+  </div>
+
+  <div class="wrap">
+    <div class="stats" id="stats"></div>
+
+    <div class="cols">
+      <!-- left: create + call next -->
+      <div class="grid">
+        <div class="card">
+          <h2>Neues Ticket ziehen</h2>
+          <input id="name" placeholder="Name / Kürzel (optional)" style="width:100%; margin-bottom:10px;" />
+          <div class="catbtns" id="catbtns"></div>
+        </div>
+
+        <div class="card">
+          <h2>Aufrufen</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <select id="room" style="flex:1;"></select>
+            <select id="provider" style="flex:1;"></select>
+          </div>
+          <button class="btn ok" id="callNext" style="width:100%;">▶ Nächsten aufrufen</button>
+          <p class="muted" style="font-size:12px; margin:10px 0 0;">
+            Reihenfolge: Priorität zuerst (Notfall), dann nach Wartezeit.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="spread">
+            <h2 style="margin:0;">Verwaltung</h2>
+            <button class="btn ghost sm" id="reset">Tag zurücksetzen</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: live queue -->
+      <div class="card">
+        <div class="controls">
+          <h2 style="margin:0; flex:1;">Warteschlange</h2>
+          <select id="filter">
+            <option value="active">Aktiv (warten + aufgerufen)</option>
+            <option value="all">Alle</option>
+            <option value="waiting">Nur wartend</option>
+            <option value="called">Nur aufgerufen</option>
+            <option value="done">Erledigt</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Nr.</th><th>Kategorie</th><th>Status</th><th>Raum</th><th>Wartet</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <p class="muted" id="empty" style="display:none; padding:18px 4px;">Noch keine Tickets heute.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/reception.js"></script>
+</body>
+</html>

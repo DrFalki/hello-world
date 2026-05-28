@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anmeldung – bitte Nummer ziehen</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background:#f8fafc; }
+    .kwrap { max-width:840px; margin:0 auto; padding:30px 22px; min-height:100vh; display:flex; flex-direction:column; }
+    .khead { text-align:center; margin-bottom:24px; }
+    .khead h1 { font-size:34px; }
+    .khead p { color:var(--muted); font-size:18px; }
+    .cats { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width:600px){ .cats{ grid-template-columns:1fr; } }
+    .kcat { border:0; border-radius:20px; padding:30px 22px; color:#fff; font-size:24px; font-weight:800; cursor:pointer; text-align:left; box-shadow:var(--shadow); }
+    .kcat small { display:block; font-weight:500; font-size:15px; opacity:.9; margin-top:6px; }
+
+    .ticketview { display:none; text-align:center; flex:1; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+    .ticketview.show { display:flex; }
+    .tnum { font-size:130px; font-weight:900; line-height:1; }
+    .tcat { font-size:22px; color:var(--muted); }
+    .qr { background:#fff; padding:16px; border-radius:18px; box-shadow:var(--shadow); }
+    .qr svg { display:block; width:240px; height:240px; }
+    .hint { color:var(--muted); font-size:16px; max-width:380px; }
+    .count { color:var(--muted); font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="kwrap">
+    <div class="khead">
+      <h1 id="practice">Willkommen</h1>
+      <p>Bitte wählen Sie Ihr Anliegen und ziehen Sie eine Nummer.</p>
+    </div>
+
+    <div class="cats" id="cats"></div>
+
+    <div class="ticketview" id="ticketview">
+      <div class="tcat">Ihre Nummer</div>
+      <div class="tnum" id="tnum" style="color:var(--brand)">–</div>
+      <div class="tcat" id="tcat"></div>
+      <div class="qr" id="qr"></div>
+      <div class="hint">📱 QR-Code scannen, um Ihr Ticket live auf dem Handy zu verfolgen – Sie sehen Ihren Aufruf direkt.</div>
+      <div class="count" id="count"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/kiosk.js"></script>
+</body>
+</html>

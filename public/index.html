@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Praxis Ticket System</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .hub { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:18px; margin-top:20px; }
+    .hub a { text-decoration:none; color:inherit; }
+    .hub .card { transition: transform .12s, box-shadow .12s; }
+    .hub .card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(15,23,42,.14); }
+    .hub .ico { font-size: 34px; }
+    .hero { display:flex; align-items:center; gap:14px; }
+    .hero .badge { font-size: 34px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> Praxis Ticket System</div>
+    <nav><a href="/display.html">Display</a><a href="/reception.html">Anmeldung</a><a href="/kiosk.html">Kiosk</a></nav>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="badge">🎫</div>
+      <div>
+        <h1 id="practice">Praxis</h1>
+        <p class="muted">Warteschlangen-Verwaltung mit Wartezimmer-Aufruf. Wähle einen Arbeitsplatz.</p>
+      </div>
+    </div>
+
+    <div class="hub">
+      <a href="/reception.html"><div class="card">
+        <div class="ico">🧑‍⚕️</div><h2>Anmeldung</h2>
+        <p class="muted">Tickets anlegen, Patienten in Räume aufrufen, Warteschlange steuern.</p>
+      </div></a>
+      <a href="/display.html" target="_blank"><div class="card">
+        <div class="ico">📺</div><h2>Wartezimmer-Display</h2>
+        <p class="muted">Großbild für den Wartebereich – zeigt Aufrufe mit Raum &amp; Ton (PAuL-Stil).</p>
+      </div></a>
+      <a href="/kiosk.html"><div class="card">
+        <div class="ico">👆</div><h2>Kiosk / Selbst-Check-in</h2>
+        <p class="muted">Touch-Terminal: Patient zieht selbst eine Nummer und erhält QR-Code.</p>
+      </div></a>
+      <div class="card">
+        <div class="ico">📱</div><h2>Smartphone-Ticket</h2>
+        <p class="muted">Über den QR-Code am Kiosk öffnet sich das Live-Ticket auf dem eigenen Handy.</p>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top:26px; font-size:13px;">
+      Tipp: Display im Wartezimmer im Vollbild (F11) öffnen. Alle Geräte müssen im selben Praxisnetz sein.
+    </p>
+  </div>
+
+  <script type="module">
+    import { api } from '/js/common.js';
+    api('/api/state').then((s) => {
+      document.getElementById('practice').textContent = s.practiceName;
+      document.title = s.practiceName + ' · Ticket System';
+    }).catch(() => {});
+  </script>
+</body>
+</html>
