@@ -179,8 +179,8 @@
 
   // ---------- Spielzustand ----------
   let state = 'menu'; // menu | playing | over
-  let score, lives, levelIdx, speed, frame, spawnTimer, pickupTimer;
-  let obstacles, projectiles, pickups, particles;
+  let score=0, lives=3, levelIdx=0, speed=5, frame=0, spawnTimer=60, pickupTimer=200;
+  let obstacles=[], projectiles=[], pickups=[], particles=[];
   let hi = +(localStorage.getItem('drGruenieHi')||0);
 
   const player = { x:90, y:GROUND, vy:0, w:46, h:74, onGround:true, run:0, flash:0 };
