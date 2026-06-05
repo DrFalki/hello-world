@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dr. Grünie – Der Gesundheits-Held</title>
+<style>
+  :root{
+    --paper:#e9d6a8;       /* Hintergrund-Sandton wie im Charakter-Sheet */
+    --ink:#2b2618;         /* Dunkles Tinten-Schwarz */
+    --green:#2e8b57;       /* "Grünie" Akzent */
+    --green-d:#1f6b41;
+    --shoe:#9c7a3c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--paper);
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+    color:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100%;
+    overflow:hidden;
+  }
+  #wrap{
+    position:relative;
+    width:100%;max-width:840px;
+    margin:auto;
+    padding:10px;
+  }
+  #stage{
+    position:relative;
+    width:100%;
+    aspect-ratio:8 / 3;
+    background:var(--paper);
+    border:4px solid var(--ink);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 10px 0 rgba(43,38,24,.25), inset 0 0 0 2px var(--paper);
+  }
+  canvas{display:block;width:100%;height:100%;image-rendering:auto;}
+
+  /* HUD */
+  #hud{
+    position:absolute;top:8px;left:10px;right:10px;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    font-weight:bold;font-size:clamp(11px,2.4vw,16px);
+    pointer-events:none;text-shadow:0 1px 0 var(--paper);
+  }
+  #hud .lives{letter-spacing:1px;font-size:clamp(13px,3vw,20px);}
+  #levelTag{
+    text-align:center;flex:1;
+    color:var(--green-d);
+  }
+
+  /* Banner / Overlays */
+  .overlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:18px;
+    background:rgba(233,214,168,.92);
+    backdrop-filter:blur(1px);
+  }
+  .overlay h1{margin:.1em 0;font-size:clamp(20px,5vw,38px);color:var(--green-d);}
+  .overlay h2{margin:.1em 0;font-size:clamp(16px,4vw,26px);}
+  .overlay p{margin:.35em 0;max-width:540px;font-size:clamp(12px,2.8vw,16px);line-height:1.4;}
+  .tip{
+    background:#fff7e2;border:2px dashed var(--green);
+    border-radius:10px;padding:8px 12px;margin-top:8px;
+    color:var(--green-d);font-weight:bold;
+  }
+  .btn{
+    margin-top:14px;cursor:pointer;border:none;
+    background:var(--green);color:#fff;font-weight:bold;
+    font-size:clamp(14px,3.4vw,20px);
+    padding:12px 26px;border-radius:30px;
+    box-shadow:0 5px 0 var(--green-d);
+    transition:transform .05s;font-family:inherit;
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--green-d);}
+  .hidden{display:none !important;}
+  .small{font-size:clamp(11px,2.4vw,13px);opacity:.8;}
+
+  /* Mobile-Steuerung */
+  #touch{
+    position:absolute;bottom:10px;left:10px;right:10px;
+    display:none;justify-content:space-between;pointer-events:none;
+  }
+  #touch button{
+    pointer-events:auto;
+    width:34%;max-width:140px;height:54px;
+    border:3px solid var(--ink);border-radius:14px;
+    background:rgba(255,247,226,.85);
+    font-size:22px;font-weight:bold;color:var(--ink);
+    font-family:inherit;
+  }
+  #touch button:active{background:var(--green);color:#fff;}
+  @media (pointer:coarse){#touch{display:flex;}}
+
+  .banner{
+    position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
+    background:var(--green);color:#fff;font-weight:bold;
+    padding:10px 22px;border-radius:30px;font-size:clamp(16px,4vw,26px);
+    box-shadow:0 5px 0 var(--green-d);white-space:nowrap;
+    opacity:0;transition:opacity .3s;pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="cv" width="800" height="300"></canvas>
+
+    <div id="hud" class="hidden">
+      <div><span id="score">0</span> Pkt</div>
+      <div id="levelTag">Level 1</div>
+      <div class="lives" id="lives">❤️❤️❤️</div>
+    </div>
+
+    <div class="banner" id="banner"></div>
+
+    <!-- Startbildschirm -->
+    <div class="overlay" id="startScreen">
+      <h1>🩺 Dr. Grünie</h1>
+      <h2>Der Gesundheits-Held</h2>
+      <p>Hilf Dr. Grünie, die größten Volkskrankheiten zu besiegen:
+         <b>Herzinfarkt</b>, <b>Krebs</b>, <b>Diabetes</b> und <b>Demenz</b>.</p>
+      <p class="small">⬆️ <b>Springen</b> (Leertaste / Pfeil&nbsp;hoch / oberer Tipp) &nbsp;·&nbsp;
+         💊 <b>Medizin werfen</b> (F / Pfeil&nbsp;runter / unterer Tipp)</p>
+      <button class="btn" id="startBtn">Spiel starten</button>
+      <p class="small">Bestwert: <span id="hiStart">0</span></p>
+    </div>
+
+    <!-- Game Over -->
+    <div class="overlay hidden" id="overScreen">
+      <h1>Game Over</h1>
+      <h2 id="overMsg"></h2>
+      <p>Punkte: <b id="finalScore">0</b> &nbsp;·&nbsp; Bestwert: <b id="hiOver">0</b></p>
+      <div class="tip" id="overTip"></div>
+      <button class="btn" id="againBtn">Nochmal spielen</button>
+    </div>
+
+    <!-- Touch-Buttons -->
+    <div id="touch">
+      <button id="btnJump">⬆️ Spring</button>
+      <button id="btnShoot">💊 Wirf</button>
+    </div>
+  </div>
+  <p class="small" style="text-align:center;opacity:.7;margin:8px 0 0">
+    Tipp: Springe über die Krankheiten oder wirf gesunde Medizin – sammle 🍏 für Bonuspunkte!
+  </p>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const GROUND = H - 46;
+
+  // ---------- Farben ----------
+  const C = {
+    paper:'#e9d6a8', ink:'#2b2618', coat:'#f4ead0',
+    green:'#2e8b57', greenD:'#1f6b41', shoe:'#9c7a3c', skin:'#e9d6a8'
+  };
+
+  // ---------- Level-Definition (die Gegner = Krankheiten) ----------
+  const LEVELS = [
+    { name:'Herzinfarkt', emoji:'🫀', color:'#c0392b',
+      tip:'Tipp: Schon 30 Min. Bewegung am Tag senken dein Herzinfarkt-Risiko deutlich.' },
+    { name:'Krebs', emoji:'🎗️', color:'#8e44ad',
+      tip:'Tipp: Nichtrauchen, wenig Alkohol und Vorsorge-Checks senken das Krebsrisiko.' },
+    { name:'Diabetes', emoji:'🩸', color:'#e67e22',
+      tip:'Tipp: Weniger Zucker, mehr Ballaststoffe – das schützt vor Typ-2-Diabetes.' },
+    { name:'Demenz', emoji:'🧠', color:'#2980b9',
+      tip:'Tipp: Soziale Kontakte und geistige Aktivität halten das Gehirn fit.' }
+  ];
+
+  // ---------- Spielzustand ----------
+  let state = 'menu'; // menu | playing | over
+  let score, lives, levelIdx, speed, frame, spawnTimer, pickupTimer;
+  let obstacles, projectiles, pickups, particles;
+  let hi = +(localStorage.getItem('drGruenieHi')||0);
+
+  const player = { x:90, y:GROUND, vy:0, w:46, h:74, onGround:true, run:0, flash:0 };
+
+  // ---------- DOM ----------
+  const el = id => document.getElementById(id);
+  const hud=el('hud'), scoreEl=el('score'), livesEl=el('lives'), levelTag=el('levelTag');
+  const startScreen=el('startScreen'), overScreen=el('overScreen');
+  const banner=el('banner');
+  el('hiStart').textContent = hi;
+
+  function showBanner(text, ms=1400){
+    banner.textContent = text; banner.style.opacity = 1;
+    clearTimeout(showBanner._t);
+    showBanner._t = setTimeout(()=>banner.style.opacity=0, ms);
+  }
+
+  // ---------- Audio (kleine WebAudio-Beeps, keine Dateien nötig) ----------
+  let actx;
+  function beep(freq, dur=.08, type='square', vol=.05){
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type=type; o.frequency.value=freq; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(vol, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime+dur);
+      o.start(); o.stop(actx.currentTime+dur);
+    }catch(e){}
+  }
+
+  // ---------- Spielstart ----------
+  function start(){
+    score=0; lives=3; levelIdx=0; speed=5; frame=0;
+    spawnTimer=60; pickupTimer=200;
+    obstacles=[]; projectiles=[]; pickups=[]; particles=[];
+    player.y=GROUND; player.vy=0; player.onGround=true; player.flash=0;
+    state='playing';
+    startScreen.classList.add('hidden');
+    overScreen.classList.add('hidden');
+    hud.classList.remove('hidden');
+    updateHud();
+    showBanner('Level 1 · '+LEVELS[0].name+' '+LEVELS[0].emoji, 1800);
+    showBanner._tipShown=false;
+  }
+
+  function updateHud(){
+    scoreEl.textContent = score;
+    livesEl.textContent = '❤️'.repeat(Math.max(0,lives)) || '💔';
+    levelTag.textContent = 'Level '+(levelIdx+1)+' · '+LEVELS[levelIdx].name;
+  }
+
+  function gameOver(){
+    state='over';
+    if(score>hi){ hi=score; localStorage.setItem('drGruenieHi', hi); }
+    el('finalScore').textContent=score;
+    el('hiOver').textContent=hi;
+    el('overTip').textContent=LEVELS[levelIdx].tip;
+    el('overMsg').textContent = score>=2000 ? 'Stark! Dr. Grünie ist ein echter Held! 🦸'
+                              : score>=800 ? 'Gut gemacht – weiter so! 💪'
+                              : 'Bleib dran – Gesundheit ist ein Marathon. 🏃';
+    overScreen.classList.remove('hidden');
+    hud.classList.add('hidden');
+    beep(160,.3,'sawtooth',.06);
+  }
+
+  // ---------- Eingaben ----------
+  function jump(){
+    if(state!=='playing') return;
+    if(player.onGround){
+      player.vy=-13.2; player.onGround=false; beep(620,.08,'square',.04);
+    }
+  }
+  function shoot(){
+    if(state!=='playing') return;
+    projectiles.push({ x:player.x+player.w-6, y:player.y-player.h+30, r:9, vx:9 });
+    beep(880,.06,'triangle',.04);
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(['Space','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); jump(); }
+    else if(['ArrowDown','KeyF','KeyS'].includes(e.code)){ e.preventDefault(); shoot(); }
+    else if(e.code==='Enter' && state!=='playing'){ start(); }
+  });
+  el('startBtn').onclick = ()=>{ start(); };
+  el('againBtn').onclick = ()=>{ start(); };
+
+  // Touch / Maus
+  el('btnJump').addEventListener('touchstart', e=>{e.preventDefault();jump();},{passive:false});
+  el('btnShoot').addEventListener('touchstart', e=>{e.preventDefault();shoot();},{passive:false});
+  el('btnJump').addEventListener('mousedown', jump);
+  el('btnShoot').addEventListener('mousedown', shoot);
+  // Tippen auf die Bühne: oben = springen, unten = werfen
+  cv.addEventListener('pointerdown', e=>{
+    if(state!=='playing') return;
+    const r=cv.getBoundingClientRect();
+    const y=(e.clientY-r.top)/r.height;
+    if(y<0.6) jump(); else shoot();
+  });
+
+  // ---------- Spawnen ----------
+  function spawnObstacle(){
+    const flying = Math.random()<0.35;
+    const lv = LEVELS[levelIdx];
+    obstacles.push({
+      x:W+20,
+      y: flying ? GROUND-90 : GROUND,
+      w:42, h:42, flying,
+      emoji:lv.emoji, color:lv.color,
+      hp:1, hit:0
+    });
+  }
+  function spawnPickup(){
+    pickups.push({ x:W+20, y:GROUND-60-Math.random()*70, r:14, emoji:'🍏', bob:Math.random()*6 });
+  }
+
+  // ---------- Kollision ----------
+  function hitTest(a, b){
+    return a.x < b.x+b.w && a.x+a.w > b.x && a.y-a.h < b.y && a.y > b.y-b.h;
+  }
+
+  function burst(x,y,color,n=10){
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2, s=1+Math.random()*4;
+      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:30,color});
+    }
+  }
+
+  // ---------- Update ----------
+  function update(){
+    frame++;
+    // Level-Fortschritt: alle 600 Punkte ein neues Level (max. 4 benannte, danach Mix + Tempo)
+    const targetLevel = Math.min(LEVELS.length-1, Math.floor(score/600));
+    if(targetLevel!==levelIdx){
+      levelIdx=targetLevel;
+      const lv=LEVELS[levelIdx];
+      showBanner('Level '+(levelIdx+1)+' · '+lv.name+' '+lv.emoji, 1800);
+      beep(740,.15,'square',.05);
+    }
+    speed = 5 + score/450; // wird stetig schneller
+
+    // Spieler-Physik
+    player.vy += 0.62;
+    player.y += player.vy;
+    if(player.y>=GROUND){ player.y=GROUND; player.vy=0; player.onGround=true; }
+    player.run += speed*0.06;
+    if(player.flash>0) player.flash--;
+
+    // Spawns
+    if(--spawnTimer<=0){
+      spawnObstacle();
+      spawnTimer = Math.max(40, 95 - score/40 - Math.random()*20);
+    }
+    if(--pickupTimer<=0){
+      spawnPickup();
+      pickupTimer = 220 + Math.random()*180;
+    }
+
+    // Hindernisse
+    for(const o of obstacles){
+      o.x -= speed;
+      if(o.hit>0) o.hit--;
+      if(state==='playing' && player.flash<=0 && hitTest(player,o)){
+        lives--; player.flash=70; burst(player.x+player.w/2, player.y-player.h/2, '#c0392b',14);
+        beep(200,.2,'sawtooth',.06); o.dead=true; updateHud();
+        if(lives<=0){ gameOver(); }
+      }
+    }
+    // Projektile
+    for(const p of projectiles){
+      p.x += p.vx;
+      for(const o of obstacles){
+        if(!o.dead && Math.abs(p.x-(o.x+o.w/2))<o.w/2+p.r && Math.abs(p.y-(o.y-o.h/2))<o.h/2+p.r){
+          o.dead=true; p.dead=true; score+=25;
+          burst(o.x+o.w/2,o.y-o.h/2,o.color,12);
+          beep(540,.08,'triangle',.05); updateHud();
+        }
+      }
+    }
+    // Pickups
+    for(const pk of pickups){
+      pk.x -= speed;
+      const box={x:pk.x-pk.r,y:pk.y+pk.r,w:pk.r*2,h:pk.r*2};
+      if(hitTest(player,box)){
+        pk.dead=true; score+=15; burst(pk.x,pk.y,C.green,8);
+        beep(960,.07,'sine',.05); updateHud();
+      }
+    }
+    // Partikel
+    for(const pt of particles){ pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.18; pt.life--; }
+
+    // Aufräumen
+    obstacles = obstacles.filter(o=>!o.dead && o.x>-60);
+    projectiles = projectiles.filter(p=>!p.dead && p.x<W+40);
+    pickups = pickups.filter(p=>!p.dead && p.x>-40);
+    particles = particles.filter(p=>p.life>0);
+
+    // Punkte fürs Überleben
+    if(frame%6===0){ score++; scoreEl.textContent=score; }
+  }
+
+  // ---------- Dr. Grünie zeichnen (Vektor, angelehnt an den Comic-Charakter) ----------
+  function drawDoctor(x, y, t){
+    const swing = Math.sin(t)*7;       // Beine
+    const arm = Math.sin(t+Math.PI)*5; // Arme
+    ctx.save();
+    ctx.translate(x, y);               // y = Fußlinie
+    ctx.lineWidth=3; ctx.strokeStyle=C.ink; ctx.lineJoin='round';
+
+    // --- Beine (dunkle Hose) ---
+    ctx.fillStyle=C.ink;
+    ctx.fillRect(8, -22, 11, 22+swing);          // hinteres Bein
+    ctx.fillRect(24, -22, 11, 22-swing);         // vorderes Bein
+    // Schuhe
+    ctx.fillStyle=C.shoe;
+    roundRect(2, -4+swing, 22, 10, 5, true, true);
+    roundRect(22, -4-swing, 24, 10, 5, true, true);
+
+    // --- Arztkittel (Körper) ---
+    ctx.fillStyle=C.coat;
+    roundRect(4, -64, 38, 44, 8, true, true);    // Kittel
+    // Grüner Saum & Knöpfe -> "Grünie"
+    ctx.fillStyle=C.green; ctx.fillRect(4,-26,38,6);
+    ctx.fillStyle=C.green;
+    for(let i=0;i<3;i++){ ctx.beginPath(); ctx.arc(23,-54+i*11,2.2,0,7); ctx.fill(); }
+    // Kragen
+    ctx.fillStyle=C.coat; ctx.beginPath();
+    ctx.moveTo(18,-64); ctx.lineTo(23,-56); ctx.lineTo(28,-64); ctx.stroke();
+
+    // Stethoskop (grün)
+    ctx.strokeStyle=C.greenD; ctx.lineWidth=2.4; ctx.beginPath();
+    ctx.moveTo(18,-62); ctx.quadraticCurveTo(14,-44,24,-40);
+    ctx.quadraticCurveTo(34,-44,30,-62); ctx.stroke();
+    ctx.fillStyle=C.greenD; ctx.beginPath(); ctx.arc(24,-39,3.2,0,7); ctx.fill();
+    ctx.strokeStyle=C.ink; ctx.lineWidth=3;
+
+    // --- Arm mit Daumen-hoch (vorne) ---
+    ctx.fillStyle=C.coat;
+    roundRect(34, -60+arm, 12, 20, 6, true, true);
+    ctx.fillStyle=C.skin; ctx.beginPath(); ctx.arc(44,-58+arm,6,0,7); ctx.fill(); ctx.stroke();
+    // Daumen
+    ctx.beginPath(); ctx.moveTo(44,-64+arm); ctx.lineTo(44,-70+arm); ctx.stroke();
+
+    // --- Kopf ---
+    ctx.fillStyle=C.skin;
+    ctx.beginPath(); ctx.ellipse(23,-78,16,15,0,0,7); ctx.fill(); ctx.stroke();
+    // Haare (dunkel, lockig)
+    ctx.fillStyle=C.ink; ctx.beginPath();
+    ctx.moveTo(8,-80);
+    ctx.bezierCurveTo(6,-98, 20,-100, 23,-94);
+    ctx.bezierCurveTo(27,-101, 40,-97, 37,-80);
+    ctx.bezierCurveTo(34,-88, 30,-88, 27,-86);
+    ctx.bezierCurveTo(24,-90, 20,-90, 18,-86);
+    ctx.bezierCurveTo(14,-88, 11,-86, 8,-80);
+    ctx.closePath(); ctx.fill();
+    // Ohr
+    ctx.fillStyle=C.skin; ctx.beginPath(); ctx.arc(8,-76,3.5,0,7); ctx.fill(); ctx.stroke();
+    // Auge
+    ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(26,-80,2.6,0,7); ctx.fill();
+    // Augenbraue
+    ctx.beginPath(); ctx.moveTo(22,-86); ctx.quadraticCurveTo(27,-89,30,-86); ctx.stroke();
+    // Nase
+    ctx.fillStyle=C.skin; ctx.beginPath(); ctx.arc(33,-77,4,0,7); ctx.fill(); ctx.stroke();
+    // Lächeln
+    ctx.beginPath(); ctx.arc(28,-74,7,0.15,1.25); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r,fill,stroke){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+    if(fill) ctx.fill();
+    if(stroke) ctx.stroke();
+  }
+
+  // ---------- Render ----------
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // Hintergrund-Hügel (level-farbig getönt)
+    const lv = LEVELS[levelIdx||0];
+    ctx.fillStyle = 'rgba(46,139,87,.12)';
+    ctx.beginPath();
+    const o=(frame*0.6)% 200;
+    for(let i=-1;i<6;i++){ const bx=i*200-o; ctx.moveTo(bx,GROUND);
+      ctx.arc(bx+100,GROUND,90,Math.PI,0); }
+    ctx.fill();
+
+    // Boden
+    ctx.strokeStyle=C.ink; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(0,GROUND); ctx.lineTo(W,GROUND); ctx.stroke();
+    // Boden-Striche (Bewegung)
+    ctx.lineWidth=2;
+    for(let i=0;i<W/40+1;i++){
+      const dx=(i*40-(frame*speed)%40);
+      ctx.beginPath(); ctx.moveTo(dx,GROUND+10); ctx.lineTo(dx+14,GROUND+10); ctx.stroke();
+    }
+
+    // Pickups
+    ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(const pk of pickups){
+      ctx.fillText(pk.emoji, pk.x, pk.y+Math.sin(frame*0.1+pk.bob)*3);
+    }
+
+    // Hindernisse (Krankheiten) – mit pulsierendem "Aura"-Ring
+    for(const ob of obstacles){
+      ctx.save();
+      ctx.globalAlpha = ob.hit? .5:1;
+      ctx.beginPath();
+      ctx.fillStyle = ob.color+'33';
+      const pr = ob.w/2 + 4 + Math.sin(frame*0.2)*2;
+      ctx.arc(ob.x+ob.w/2, ob.y-ob.h/2, pr, 0, 7); ctx.fill();
+      ctx.font='38px serif';
+      ctx.fillText(ob.emoji, ob.x+ob.w/2, ob.y-ob.h/2);
+      ctx.restore();
+    }
+
+    // Projektile (Medizin/Pillen)
+    for(const p of projectiles){
+      ctx.font='20px serif';
+      ctx.fillText('💊', p.x, p.y);
+    }
+
+    // Partikel
+    for(const pt of particles){
+      ctx.globalAlpha = Math.max(0, pt.life/30);
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(pt.x, pt.y, 4, 4);
+      ctx.globalAlpha = 1;
+    }
+
+    // Spieler (blinkt bei Treffer)
+    if(!(player.flash>0 && Math.floor(frame/4)%2)){
+      drawDoctor(player.x, player.y, player.run);
+    }
+  }
+
+  // ---------- Loop ----------
+  function loop(){
+    if(state==='playing'){ update(); }
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  // Idle-Anzeige im Menü
+  player.run = 0;
+})();
+</script>
+</body>
+</html>
