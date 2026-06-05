@@ -7,24 +7,34 @@ Hiermit beginne ich die Reise die Medizin zu verändern.
 
 ---
 
-## 🩺 Dr. Grünie – Der Gesundheits-Held (Minispiel)
+## 🚀 Dr. Grünie – Space Health Impact (Minispiel)
 
-Ein kleines, einbettbares Browser-Spiel im Stil des Google-Dino-Spiels (Springen)
-kombiniert mit einer Schuss-Mechanik wie beim alten Nokia-Spiel (Medizin werfen).
+Ein kleines, einbettbares Browser-Spiel im Stil von **Space Impact** (Nokia):
+ein horizontaler Weltraum-Shooter. Dr. Grünie fliegt als „Held", feuert automatisch
+Medizin nach rechts und kämpft Level für Level gegen die großen Volkskrankheiten.
 
-**Spielfigur:** Dr. Grünie – ein freundlicher Comic-Arzt mit Kittel und Stethoskop.
+**Spielfigur:** Dr. Grünie – ein freundlicher Comic-Arzt mit Kittel, Stethoskop
+und Lockenhaar, gezeichnet nach der Charaktervorlage und als fliegender Held animiert.
 
-**Ziel:** Kämpfe Level für Level gegen die großen Volkskrankheiten:
-**Herzinfarkt** 🫀 · **Krebs** 🎗️ · **Diabetes** 🩸 · **Demenz** 🧠
+**Ablauf:** Pro Level überstehst du eine **Gegnerwelle** und besiegst danach den
+jeweiligen **Boss** (mit Lebensbalken):
+
+| Level | Krankheit | Boss |
+|---|---|---|
+| 1 | Herzinfarkt 🫀 | Der große Herzinfarkt (Herzschlag-Salven) |
+| 2 | Krebs 🦠 | Der Tumor-König (spawnt Zell-Minions) |
+| 3 | Diabetes 🩸 | Zucker-Bestie (Streuschüsse) |
+| 4 | Demenz 🧠 | Der Vergesser (teleportiert) |
 
 ### Steuerung
 | Aktion | Tastatur | Touch / Maus |
 |---|---|---|
-| Springen | Leertaste / Pfeil hoch / `W` | oberer Bildschirm-Tipp oder Button **⬆️** |
-| Medizin werfen 💊 | Pfeil runter / `F` / `S` | unterer Bildschirm-Tipp oder Button **💊** |
+| Fliegen | Pfeiltasten / `WASD` | Finger/Maus über den Bildschirm ziehen |
+| Schießen 💊 | automatisch | automatisch |
 
-Springe über Krankheiten oder zerstöre sie mit Medizin, sammle 🍏 für Bonuspunkte.
-Bei jedem Treffer verlierst du ein ❤️ – nach 3 Treffern ist das Spiel vorbei.
+Zerstöre die Krankheiten mit Medizin, weiche dem Gegnerfeuer aus und sammle 🍏 für
+Bonuspunkte (und gelegentliche Heilung). Bei jedem Treffer verlierst du ein ❤️ –
+nach 3 Treffern ist das Spiel vorbei. Besiege alle 4 Bosse, um zu gewinnen.
 Der Bestwert wird lokal im Browser gespeichert.
 
 ### Dateien
@@ -36,7 +46,7 @@ Lade `dr-gruenie.html` auf deinen Webspace und füge ein:
 
 ```html
 <iframe src="dr-gruenie.html"
-        style="width:100%;max-width:860px;aspect-ratio:8/3;border:0;"
+        style="width:100%;max-width:880px;aspect-ratio:8/5;border:0;"
         title="Dr. Grünie Gesundheits-Minispiel"
         loading="lazy"></iframe>
 ```

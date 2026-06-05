@@ -3,536 +3,572 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dr. Grünie – Der Gesundheits-Held</title>
+<title>Dr. Grünie – Space Health Impact</title>
 <style>
   :root{
-    --paper:#e9d6a8;       /* Hintergrund-Sandton wie im Charakter-Sheet */
-    --ink:#2b2618;         /* Dunkles Tinten-Schwarz */
-    --green:#2e8b57;       /* "Grünie" Akzent */
-    --green-d:#1f6b41;
-    --shoe:#9c7a3c;
+    --paper:#e9d6a8; --ink:#2b2618; --green:#2e8b57; --green-d:#1f6b41; --shoe:#9c7a3c;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;height:100%;}
   body{
     background:var(--paper);
-    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
-    color:var(--ink);
-    display:flex;align-items:center;justify-content:center;
-    min-height:100%;
-    overflow:hidden;
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;min-height:100%;overflow:hidden;
   }
-  #wrap{
-    position:relative;
-    width:100%;max-width:840px;
-    margin:auto;
-    padding:10px;
-  }
+  #wrap{position:relative;width:100%;max-width:880px;margin:auto;padding:10px;}
   #stage{
-    position:relative;
-    width:100%;
-    aspect-ratio:8 / 3;
-    background:var(--paper);
-    border:4px solid var(--ink);
-    border-radius:14px;
-    overflow:hidden;
-    box-shadow:0 10px 0 rgba(43,38,24,.25), inset 0 0 0 2px var(--paper);
+    position:relative;width:100%;aspect-ratio:8 / 5;
+    background:#10131c;border:4px solid var(--ink);border-radius:14px;overflow:hidden;
+    box-shadow:0 10px 0 rgba(43,38,24,.25);
   }
-  canvas{display:block;width:100%;height:100%;image-rendering:auto;}
-
-  /* HUD */
+  canvas{display:block;width:100%;height:100%;}
   #hud{
-    position:absolute;top:8px;left:10px;right:10px;
-    display:flex;justify-content:space-between;align-items:flex-start;
-    font-weight:bold;font-size:clamp(11px,2.4vw,16px);
-    pointer-events:none;text-shadow:0 1px 0 var(--paper);
+    position:absolute;top:8px;left:10px;right:10px;display:flex;justify-content:space-between;
+    align-items:flex-start;font-weight:bold;font-size:clamp(11px,2.4vw,16px);
+    pointer-events:none;color:#fff;text-shadow:0 1px 2px #000;
   }
-  #hud .lives{letter-spacing:1px;font-size:clamp(13px,3vw,20px);}
-  #levelTag{
-    text-align:center;flex:1;
-    color:var(--green-d);
+  #levelTag{text-align:center;flex:1;color:#7fe0a8;}
+  #bossbar{
+    position:absolute;left:12%;right:12%;top:34px;height:12px;
+    border:2px solid #fff;border-radius:8px;background:rgba(0,0,0,.4);
+    display:none;overflow:hidden;box-shadow:0 0 8px rgba(0,0,0,.5);
   }
-
-  /* Banner / Overlays */
+  #bossfill{height:100%;width:100%;background:linear-gradient(90deg,#ff5555,#ffb347);transition:width .12s;}
+  #bossname{
+    position:absolute;left:0;right:0;top:18px;text-align:center;color:#fff;
+    font-weight:bold;font-size:clamp(11px,2.6vw,15px);text-shadow:0 1px 2px #000;display:none;
+  }
   .overlay{
-    position:absolute;inset:0;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:18px;
-    background:rgba(233,214,168,.92);
-    backdrop-filter:blur(1px);
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:18px;background:rgba(16,19,28,.9);color:#f4ead0;
   }
-  .overlay h1{margin:.1em 0;font-size:clamp(20px,5vw,38px);color:var(--green-d);}
-  .overlay h2{margin:.1em 0;font-size:clamp(16px,4vw,26px);}
-  .overlay p{margin:.35em 0;max-width:540px;font-size:clamp(12px,2.8vw,16px);line-height:1.4;}
-  .tip{
-    background:#fff7e2;border:2px dashed var(--green);
-    border-radius:10px;padding:8px 12px;margin-top:8px;
-    color:var(--green-d);font-weight:bold;
-  }
-  .btn{
-    margin-top:14px;cursor:pointer;border:none;
-    background:var(--green);color:#fff;font-weight:bold;
-    font-size:clamp(14px,3.4vw,20px);
-    padding:12px 26px;border-radius:30px;
-    box-shadow:0 5px 0 var(--green-d);
-    transition:transform .05s;font-family:inherit;
-  }
+  .overlay h1{margin:.1em 0;font-size:clamp(20px,5vw,38px);color:#7fe0a8;}
+  .overlay h2{margin:.1em 0;font-size:clamp(15px,4vw,24px);}
+  .overlay p{margin:.35em 0;max-width:560px;font-size:clamp(12px,2.8vw,16px);line-height:1.45;}
+  .tip{background:rgba(46,139,87,.18);border:2px dashed var(--green);border-radius:10px;
+       padding:8px 12px;margin-top:8px;color:#9fe9bd;font-weight:bold;}
+  .btn{margin-top:14px;cursor:pointer;border:none;background:var(--green);color:#fff;font-weight:bold;
+       font-size:clamp(14px,3.4vw,20px);padding:12px 26px;border-radius:30px;
+       box-shadow:0 5px 0 var(--green-d);transition:transform .05s;font-family:inherit;}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--green-d);}
   .hidden{display:none !important;}
-  .small{font-size:clamp(11px,2.4vw,13px);opacity:.8;}
-
-  /* Mobile-Steuerung */
-  #touch{
-    position:absolute;bottom:10px;left:10px;right:10px;
-    display:none;justify-content:space-between;pointer-events:none;
+  .small{font-size:clamp(11px,2.4vw,13px);opacity:.85;}
+  #touchHint{
+    position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#fff;opacity:.5;
+    font-size:11px;pointer-events:none;
   }
-  #touch button{
-    pointer-events:auto;
-    width:34%;max-width:140px;height:54px;
-    border:3px solid var(--ink);border-radius:14px;
-    background:rgba(255,247,226,.85);
-    font-size:22px;font-weight:bold;color:var(--ink);
-    font-family:inherit;
-  }
-  #touch button:active{background:var(--green);color:#fff;}
-  @media (pointer:coarse){#touch{display:flex;}}
-
   .banner{
-    position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
-    background:var(--green);color:#fff;font-weight:bold;
-    padding:10px 22px;border-radius:30px;font-size:clamp(16px,4vw,26px);
-    box-shadow:0 5px 0 var(--green-d);white-space:nowrap;
-    opacity:0;transition:opacity .3s;pointer-events:none;
+    position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);background:var(--green);color:#fff;
+    font-weight:bold;padding:10px 22px;border-radius:30px;font-size:clamp(15px,4vw,24px);
+    box-shadow:0 5px 0 var(--green-d);white-space:nowrap;opacity:0;transition:opacity .3s;
+    pointer-events:none;text-align:center;
   }
 </style>
 </head>
 <body>
 <div id="wrap">
   <div id="stage">
-    <canvas id="cv" width="800" height="300"></canvas>
+    <canvas id="cv" width="800" height="500"></canvas>
 
     <div id="hud" class="hidden">
       <div><span id="score">0</span> Pkt</div>
       <div id="levelTag">Level 1</div>
-      <div class="lives" id="lives">❤️❤️❤️</div>
+      <div id="lives">❤️❤️❤️</div>
     </div>
+    <div id="bossbar"><div id="bossfill"></div></div>
+    <div id="bossname"></div>
 
     <div class="banner" id="banner"></div>
 
-    <!-- Startbildschirm -->
     <div class="overlay" id="startScreen">
-      <h1>🩺 Dr. Grünie</h1>
-      <h2>Der Gesundheits-Held</h2>
-      <p>Hilf Dr. Grünie, die größten Volkskrankheiten zu besiegen:
-         <b>Herzinfarkt</b>, <b>Krebs</b>, <b>Diabetes</b> und <b>Demenz</b>.</p>
-      <p class="small">⬆️ <b>Springen</b> (Leertaste / Pfeil&nbsp;hoch / oberer Tipp) &nbsp;·&nbsp;
-         💊 <b>Medizin werfen</b> (F / Pfeil&nbsp;runter / unterer Tipp)</p>
+      <h1>🚀 Dr. Grünie</h1>
+      <h2>Space Health Impact</h2>
+      <p>Fliege als Dr. Grünie und feuere Medizin auf die Krankheiten!
+         Überstehe jede Welle und besiege den <b>Boss</b> am Ende jedes Levels:</p>
+      <p><b>🫀 Herzinfarkt → 🎗️ Krebs → 🩸 Diabetes → 🧠 Demenz</b></p>
+      <p class="small">🕹️ <b>Bewegen:</b> Pfeiltasten / WASD &nbsp;oder&nbsp; Finger über den Bildschirm ziehen.
+         <br>💊 <b>Geschossen wird automatisch.</b></p>
       <button class="btn" id="startBtn">Spiel starten</button>
       <p class="small">Bestwert: <span id="hiStart">0</span></p>
     </div>
 
-    <!-- Game Over -->
     <div class="overlay hidden" id="overScreen">
-      <h1>Game Over</h1>
+      <h1 id="overTitle">Game Over</h1>
       <h2 id="overMsg"></h2>
       <p>Punkte: <b id="finalScore">0</b> &nbsp;·&nbsp; Bestwert: <b id="hiOver">0</b></p>
       <div class="tip" id="overTip"></div>
       <button class="btn" id="againBtn">Nochmal spielen</button>
     </div>
 
-    <!-- Touch-Buttons -->
-    <div id="touch">
-      <button id="btnJump">⬆️ Spring</button>
-      <button id="btnShoot">💊 Wirf</button>
-    </div>
+    <div id="touchHint">Ziehen zum Fliegen · Auto-Feuer</div>
   </div>
   <p class="small" style="text-align:center;opacity:.7;margin:8px 0 0">
-    Tipp: Springe über die Krankheiten oder wirf gesunde Medizin – sammle 🍏 für Bonuspunkte!
+    Sammle 🍏 für Bonus & Heilung · Weiche dem Gegnerfeuer aus · Besiege alle 4 Bosse!
   </p>
 </div>
 
 <script>
 (() => {
   "use strict";
-  const cv = document.getElementById('cv');
-  const ctx = cv.getContext('2d');
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
-  const GROUND = H - 46;
 
-  // ---------- Farben ----------
-  const C = {
-    paper:'#e9d6a8', ink:'#2b2618', coat:'#f4ead0',
-    green:'#2e8b57', greenD:'#1f6b41', shoe:'#9c7a3c', skin:'#e9d6a8'
-  };
+  const COL = { paper:'#e9d6a8', ink:'#2b2618', coat:'#f4ead0', coatSh:'#d8c8a0',
+                green:'#2e8b57', greenD:'#1f6b41', shoe:'#9c7a3c', skin:'#f0d9b0', hair:'#241f16' };
 
-  // ---------- Level-Definition (die Gegner = Krankheiten) ----------
+  // Level- & Boss-Definition
   const LEVELS = [
-    { name:'Herzinfarkt', emoji:'🫀', color:'#c0392b',
-      tip:'Tipp: Schon 30 Min. Bewegung am Tag senken dein Herzinfarkt-Risiko deutlich.' },
-    { name:'Krebs', emoji:'🎗️', color:'#8e44ad',
-      tip:'Tipp: Nichtrauchen, wenig Alkohol und Vorsorge-Checks senken das Krebsrisiko.' },
+    { name:'Herzinfarkt', emoji:'🫀', color:'#e74c3c',
+      tip:'Tipp: 30 Min. Bewegung am Tag senken dein Herzinfarkt-Risiko deutlich.',
+      boss:{ emoji:'🫀', name:'Der große Herzinfarkt', hp:60, pattern:'beat' } },
+    { name:'Krebs', emoji:'🦠', color:'#9b59b6',
+      tip:'Tipp: Nichtrauchen, wenig Alkohol und Vorsorge senken das Krebsrisiko.',
+      boss:{ emoji:'🦠', name:'Der Tumor-König', hp:80, pattern:'spawn' } },
     { name:'Diabetes', emoji:'🩸', color:'#e67e22',
-      tip:'Tipp: Weniger Zucker, mehr Ballaststoffe – das schützt vor Typ-2-Diabetes.' },
-    { name:'Demenz', emoji:'🧠', color:'#2980b9',
-      tip:'Tipp: Soziale Kontakte und geistige Aktivität halten das Gehirn fit.' }
+      tip:'Tipp: Weniger Zucker, mehr Ballaststoffe schützen vor Typ-2-Diabetes.',
+      boss:{ emoji:'🩸', name:'Zucker-Bestie', hp:100, pattern:'spread' } },
+    { name:'Demenz', emoji:'🧠', color:'#3498db',
+      tip:'Tipp: Soziale Kontakte und geistige Aktivität halten das Gehirn fit.',
+      boss:{ emoji:'🧠', name:'Der Vergesser', hp:120, pattern:'teleport' } }
   ];
 
-  // ---------- Spielzustand ----------
-  let state = 'menu'; // menu | playing | over
-  let score=0, lives=3, levelIdx=0, speed=5, frame=0, spawnTimer=60, pickupTimer=200;
-  let obstacles=[], projectiles=[], pickups=[], particles=[];
-  let hi = +(localStorage.getItem('drGruenieHi')||0);
+  let state='menu'; // menu | playing | over | win
+  let phase='wave'; // wave | boss
+  let score=0, lives=3, levelIdx=0, frame=0;
+  let spawnTimer=70, pickupTimer=300, fireCD=0, waveKills=0, waveTarget=8;
+  let enemies=[], shots=[], eShots=[], pickups=[], particles=[], stars=[];
+  let boss=null;
+  let hi=+(localStorage.getItem('drGruenieHi2')||0);
 
-  const player = { x:90, y:GROUND, vy:0, w:46, h:74, onGround:true, run:0, flash:0 };
+  const player={ x:120, y:H/2, r:26, tx:120, ty:H/2, flash:0, bob:0 };
+  const keys={};
 
-  // ---------- DOM ----------
-  const el = id => document.getElementById(id);
-  const hud=el('hud'), scoreEl=el('score'), livesEl=el('lives'), levelTag=el('levelTag');
-  const startScreen=el('startScreen'), overScreen=el('overScreen');
-  const banner=el('banner');
-  el('hiStart').textContent = hi;
+  const el=id=>document.getElementById(id);
+  const hud=el('hud'), bossbar=el('bossbar'), bossfill=el('bossfill'), bossnameEl=el('bossname');
+  el('hiStart').textContent=hi;
 
-  function showBanner(text, ms=1400){
-    banner.textContent = text; banner.style.opacity = 1;
-    clearTimeout(showBanner._t);
-    showBanner._t = setTimeout(()=>banner.style.opacity=0, ms);
+  // Sterne-Hintergrund (Parallax)
+  for(let i=0;i<60;i++) stars.push({x:Math.random()*W,y:Math.random()*H,z:.3+Math.random()*1.4,s:Math.random()*1.6+.4});
+
+  function showBanner(t,ms=1600){
+    const b=el('banner'); b.textContent=t; b.style.opacity=1;
+    clearTimeout(showBanner._t); showBanner._t=setTimeout(()=>b.style.opacity=0,ms);
   }
 
-  // ---------- Audio (kleine WebAudio-Beeps, keine Dateien nötig) ----------
+  // Audio
   let actx;
-  function beep(freq, dur=.08, type='square', vol=.05){
-    try{
-      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
-      const o=actx.createOscillator(), g=actx.createGain();
-      o.type=type; o.frequency.value=freq; o.connect(g); g.connect(actx.destination);
-      g.gain.setValueAtTime(vol, actx.currentTime);
-      g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime+dur);
-      o.start(); o.stop(actx.currentTime+dur);
+  function beep(freq,dur=.08,type='square',vol=.05){
+    try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+      const o=actx.createOscillator(),g=actx.createGain();
+      o.type=type;o.frequency.value=freq;o.connect(g);g.connect(actx.destination);
+      g.gain.setValueAtTime(vol,actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+dur);
+      o.start();o.stop(actx.currentTime+dur);
     }catch(e){}
   }
 
-  // ---------- Spielstart ----------
   function start(){
-    score=0; lives=3; levelIdx=0; speed=5; frame=0;
-    spawnTimer=60; pickupTimer=200;
-    obstacles=[]; projectiles=[]; pickups=[]; particles=[];
-    player.y=GROUND; player.vy=0; player.onGround=true; player.flash=0;
+    score=0;lives=3;levelIdx=0;frame=0;phase='wave';
+    spawnTimer=50;pickupTimer=300;fireCD=0;waveKills=0;waveTarget=8;
+    enemies=[];shots=[];eShots=[];pickups=[];particles=[];boss=null;
+    player.x=player.tx=120;player.y=player.ty=H/2;player.flash=0;
     state='playing';
-    startScreen.classList.add('hidden');
-    overScreen.classList.add('hidden');
+    el('startScreen').classList.add('hidden');
+    el('overScreen').classList.add('hidden');
     hud.classList.remove('hidden');
     updateHud();
-    showBanner('Level 1 · '+LEVELS[0].name+' '+LEVELS[0].emoji, 1800);
-    showBanner._tipShown=false;
+    showBanner('Level 1 · '+LEVELS[0].name,1800);
+    hideBoss();
   }
 
   function updateHud(){
-    scoreEl.textContent = score;
-    livesEl.textContent = '❤️'.repeat(Math.max(0,lives)) || '💔';
-    levelTag.textContent = 'Level '+(levelIdx+1)+' · '+LEVELS[levelIdx].name;
+    el('score').textContent=score;
+    el('lives').textContent='❤️'.repeat(Math.max(0,lives))||'💔';
+    el('levelTag').textContent='Level '+(levelIdx+1)+' · '+LEVELS[levelIdx].name;
   }
+  function showBoss(){ bossbar.style.display='block';bossnameEl.style.display='block';
+    bossnameEl.textContent=LEVELS[levelIdx].boss.name; }
+  function hideBoss(){ bossbar.style.display='none';bossnameEl.style.display='none'; }
 
-  function gameOver(){
-    state='over';
-    if(score>hi){ hi=score; localStorage.setItem('drGruenieHi', hi); }
-    el('finalScore').textContent=score;
-    el('hiOver').textContent=hi;
+  function gameOver(win){
+    state=win?'win':'over';
+    if(score>hi){hi=score;localStorage.setItem('drGruenieHi2',hi);}
+    el('finalScore').textContent=score;el('hiOver').textContent=hi;
     el('overTip').textContent=LEVELS[levelIdx].tip;
-    el('overMsg').textContent = score>=2000 ? 'Stark! Dr. Grünie ist ein echter Held! 🦸'
-                              : score>=800 ? 'Gut gemacht – weiter so! 💪'
-                              : 'Bleib dran – Gesundheit ist ein Marathon. 🏃';
-    overScreen.classList.remove('hidden');
-    hud.classList.add('hidden');
-    beep(160,.3,'sawtooth',.06);
+    el('overTitle').textContent=win?'🏆 Gewonnen!':'Game Over';
+    el('overMsg').textContent=win?'Dr. Grünie hat alle Krankheiten besiegt!'
+      :(score>=1500?'Starke Leistung! 💪':'Bleib dran – Gesundheit ist Teamarbeit. 🩺');
+    el('overScreen').classList.remove('hidden');
+    hud.classList.add('hidden');hideBoss();
+    beep(win?880:160,.3,win?'triangle':'sawtooth',.06);
   }
 
-  // ---------- Eingaben ----------
-  function jump(){
-    if(state!=='playing') return;
-    if(player.onGround){
-      player.vy=-13.2; player.onGround=false; beep(620,.08,'square',.04);
-    }
-  }
-  function shoot(){
-    if(state!=='playing') return;
-    projectiles.push({ x:player.x+player.w-6, y:player.y-player.h+30, r:9, vx:9 });
-    beep(880,.06,'triangle',.04);
-  }
-
-  document.addEventListener('keydown', e=>{
-    if(['Space','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); jump(); }
-    else if(['ArrowDown','KeyF','KeyS'].includes(e.code)){ e.preventDefault(); shoot(); }
-    else if(e.code==='Enter' && state!=='playing'){ start(); }
+  // ---- Eingaben ----
+  document.addEventListener('keydown',e=>{
+    keys[e.code]=true;
+    if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+    if(e.code==='Enter'&&state!=='playing')start();
   });
-  el('startBtn').onclick = ()=>{ start(); };
-  el('againBtn').onclick = ()=>{ start(); };
+  document.addEventListener('keyup',e=>keys[e.code]=false);
 
-  // Touch / Maus
-  el('btnJump').addEventListener('touchstart', e=>{e.preventDefault();jump();},{passive:false});
-  el('btnShoot').addEventListener('touchstart', e=>{e.preventDefault();shoot();},{passive:false});
-  el('btnJump').addEventListener('mousedown', jump);
-  el('btnShoot').addEventListener('mousedown', shoot);
-  // Tippen auf die Bühne: oben = springen, unten = werfen
-  cv.addEventListener('pointerdown', e=>{
-    if(state!=='playing') return;
+  let dragging=false;
+  function pointerMove(e){
+    if(state!=='playing')return;
     const r=cv.getBoundingClientRect();
-    const y=(e.clientY-r.top)/r.height;
-    if(y<0.6) jump(); else shoot();
-  });
+    const cx=(e.clientX-r.left)/r.width*W, cy=(e.clientY-r.top)/r.height*H;
+    player.tx=cx;player.ty=cy;
+  }
+  cv.addEventListener('pointerdown',e=>{dragging=true;pointerMove(e);});
+  cv.addEventListener('pointermove',e=>{if(dragging)pointerMove(e);});
+  window.addEventListener('pointerup',()=>dragging=false);
+  el('startBtn').onclick=start; el('againBtn').onclick=start;
 
-  // ---------- Spawnen ----------
-  function spawnObstacle(){
-    const flying = Math.random()<0.35;
-    const lv = LEVELS[levelIdx];
-    obstacles.push({
-      x:W+20,
-      y: flying ? GROUND-90 : GROUND,
-      w:42, h:42, flying,
-      emoji:lv.emoji, color:lv.color,
-      hp:1, hit:0
-    });
+  // ---- Spawnen ----
+  function spawnEnemy(){
+    const lv=LEVELS[levelIdx];
+    const y=50+Math.random()*(H-100);
+    enemies.push({ x:W+30,y, r:20, hp:1+Math.floor(levelIdx/2),
+      emoji:lv.emoji,color:lv.color,
+      base:y, amp:20+Math.random()*40, ph:Math.random()*7, sp:2.2+levelIdx*0.4+Math.random(),
+      shooter:Math.random()<0.35, fireT:60+Math.random()*60 });
   }
   function spawnPickup(){
-    pickups.push({ x:W+20, y:GROUND-60-Math.random()*70, r:14, emoji:'🍏', bob:Math.random()*6 });
+    pickups.push({ x:W+20,y:50+Math.random()*(H-100),r:15,emoji:'🍏',bob:Math.random()*7,sp:2.4 });
+  }
+  function makeBoss(){
+    const b=LEVELS[levelIdx].boss;
+    boss={ x:W+120,y:H/2,r:54,hp:b.hp,maxhp:b.hp,emoji:b.emoji,color:LEVELS[levelIdx].color,
+      pattern:b.pattern,t:0,fireT:50,dir:1,hit:0,entering:true };
+    showBoss();showBanner('⚠️ BOSS: '+b.name,2000);beep(220,.4,'sawtooth',.06);
   }
 
-  // ---------- Kollision ----------
-  function hitTest(a, b){
-    return a.x < b.x+b.w && a.x+a.w > b.x && a.y-a.h < b.y && a.y > b.y-b.h;
+  function playerFire(){
+    shots.push({ x:player.x+30,y:player.y-6,r:8,sp:11 });
+    beep(880,.05,'triangle',.035);
   }
 
-  function burst(x,y,color,n=10){
-    for(let i=0;i<n;i++){
-      const a=Math.random()*Math.PI*2, s=1+Math.random()*4;
-      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:30,color});
-    }
+  function burst(x,y,color,n=12){
+    for(let i=0;i<n;i++){const a=Math.random()*7,s=1+Math.random()*4.5;
+      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:30,color});}
+  }
+  function dist2(ax,ay,bx,by){const dx=ax-bx,dy=ay-by;return dx*dx+dy*dy;}
+
+  function hurtPlayer(){
+    if(player.flash>0)return;
+    lives--;player.flash=80;burst(player.x,player.y,'#e74c3c',16);
+    beep(180,.2,'sawtooth',.06);updateHud();
+    if(lives<=0)gameOver(false);
   }
 
-  // ---------- Update ----------
+  // ---- Update ----
   function update(){
     frame++;
-    // Level-Fortschritt: alle 600 Punkte ein neues Level (max. 4 benannte, danach Mix + Tempo)
-    const targetLevel = Math.min(LEVELS.length-1, Math.floor(score/600));
-    if(targetLevel!==levelIdx){
-      levelIdx=targetLevel;
-      const lv=LEVELS[levelIdx];
-      showBanner('Level '+(levelIdx+1)+' · '+lv.name+' '+lv.emoji, 1800);
-      beep(740,.15,'square',.05);
-    }
-    speed = 5 + score/450; // wird stetig schneller
+    // Sterne
+    for(const s of stars){s.x-=s.z*1.4;if(s.x<0){s.x=W;s.y=Math.random()*H;}}
 
-    // Spieler-Physik
-    player.vy += 0.62;
-    player.y += player.vy;
-    if(player.y>=GROUND){ player.y=GROUND; player.vy=0; player.onGround=true; }
-    player.run += speed*0.06;
-    if(player.flash>0) player.flash--;
+    // Spieler-Bewegung (Tastatur)
+    const acc=0.9, max=8;
+    let vx=0,vy=0;
+    if(keys['ArrowLeft']||keys['KeyA'])vx-=1;
+    if(keys['ArrowRight']||keys['KeyD'])vx+=1;
+    if(keys['ArrowUp']||keys['KeyW'])vy-=1;
+    if(keys['ArrowDown']||keys['KeyS'])vy+=1;
+    if(vx||vy){player.tx+=vx*max*2;player.ty+=vy*max*2;}
+    // zum Ziel gleiten
+    player.x+=(player.tx-player.x)*0.25;
+    player.y+=(player.ty-player.y)*0.25;
+    // Grenzen
+    player.x=Math.max(40,Math.min(W*0.7,player.x));
+    player.y=Math.max(40,Math.min(H-40,player.y));
+    player.tx=Math.max(40,Math.min(W*0.7,player.tx));
+    player.ty=Math.max(40,Math.min(H-40,player.ty));
+    player.bob+=0.15;
+    if(player.flash>0)player.flash--;
 
-    // Spawns
-    if(--spawnTimer<=0){
-      spawnObstacle();
-      spawnTimer = Math.max(40, 95 - score/40 - Math.random()*20);
-    }
-    if(--pickupTimer<=0){
-      spawnPickup();
-      pickupTimer = 220 + Math.random()*180;
-    }
+    // Auto-Feuer
+    if(--fireCD<=0){playerFire();fireCD=12;}
 
-    // Hindernisse
-    for(const o of obstacles){
-      o.x -= speed;
-      if(o.hit>0) o.hit--;
-      if(state==='playing' && player.flash<=0 && hitTest(player,o)){
-        lives--; player.flash=70; burst(player.x+player.w/2, player.y-player.h/2, '#c0392b',14);
-        beep(200,.2,'sawtooth',.06); o.dead=true; updateHud();
-        if(lives<=0){ gameOver(); }
+    // Phase: Welle vs. Boss
+    if(phase==='wave'){
+      // nur nachspawnen, solange das Wellenziel noch nicht erreicht ist
+      if(waveKills<waveTarget && --spawnTimer<=0 && enemies.length<6){
+        spawnEnemy();spawnTimer=Math.max(28,70-levelIdx*8-Math.random()*20);
+      }
+      // Wellenziel erreicht & Bildschirm leer -> Boss erscheint
+      if(waveKills>=waveTarget && enemies.length===0){ phase='boss'; makeBoss(); }
+    }
+    if(--pickupTimer<=0){spawnPickup();pickupTimer=320+Math.random()*240;}
+
+    // Gegner
+    for(const e of enemies){
+      e.x-=e.sp;
+      e.y=e.base+Math.sin(frame*0.05+e.ph)*e.amp*0.05*0 + Math.sin(frame*0.04+e.ph)*e.amp;
+      if(e.shooter && --e.fireT<=0){
+        const a=Math.atan2(player.y-e.y,player.x-e.x);
+        eShots.push({x:e.x,y:e.y,vx:Math.cos(a)*4.2,vy:Math.sin(a)*4.2,r:7,color:e.color});
+        e.fireT=90+Math.random()*60;
+      }
+      if(player.flash<=0 && dist2(e.x,e.y,player.x,player.y)<(e.r+player.r*0.7)**2){
+        e.dead=true;hurtPlayer();burst(e.x,e.y,e.color,10);
       }
     }
-    // Projektile
-    for(const p of projectiles){
-      p.x += p.vx;
-      for(const o of obstacles){
-        if(!o.dead && Math.abs(p.x-(o.x+o.w/2))<o.w/2+p.r && Math.abs(p.y-(o.y-o.h/2))<o.h/2+p.r){
-          o.dead=true; p.dead=true; score+=25;
-          burst(o.x+o.w/2,o.y-o.h/2,o.color,12);
-          beep(540,.08,'triangle',.05); updateHud();
+    // Spieler-Schüsse
+    for(const s of shots){
+      s.x+=s.sp;
+      for(const e of enemies){
+        if(!e.dead && dist2(s.x,s.y,e.x,e.y)<(e.r+s.r)**2){
+          e.hp--;s.dead=true;burst(s.x,s.y,e.color,5);
+          if(e.hp<=0){e.dead=true;score+=30;waveKills++;burst(e.x,e.y,e.color,12);beep(520,.06,'triangle',.05);updateHud();}
+          break;
         }
+      }
+      if(boss && !s.dead && dist2(s.x,s.y,boss.x,boss.y)<(boss.r+s.r)**2 && !boss.entering){
+        boss.hp--;boss.hit=6;s.dead=true;score+=5;burst(s.x,s.y,boss.color,4);
+        bossfill.style.width=Math.max(0,boss.hp/boss.maxhp*100)+'%';
+        if(frame%3===0)updateHud();
+        if(boss.hp<=0)defeatBoss();
+      }
+    }
+    // Gegner-Schüsse
+    for(const s of eShots){
+      s.x+=s.vx;s.y+=s.vy;
+      if(player.flash<=0 && dist2(s.x,s.y,player.x,player.y)<(s.r+player.r*0.7)**2){
+        s.dead=true;hurtPlayer();
       }
     }
     // Pickups
-    for(const pk of pickups){
-      pk.x -= speed;
-      const box={x:pk.x-pk.r,y:pk.y+pk.r,w:pk.r*2,h:pk.r*2};
-      if(hitTest(player,box)){
-        pk.dead=true; score+=15; burst(pk.x,pk.y,C.green,8);
-        beep(960,.07,'sine',.05); updateHud();
+    for(const p of pickups){
+      p.x-=p.sp;
+      if(dist2(p.x,p.y,player.x,player.y)<(p.r+player.r*0.8)**2){
+        p.dead=true;score+=20;
+        if(lives<3 && Math.random()<0.5){lives++;burst(p.x,p.y,'#e74c3c',14);}
+        else burst(p.x,p.y,COL.green,10);
+        beep(960,.07,'sine',.05);updateHud();
       }
     }
+    // Boss-Logik
+    if(boss)updateBoss();
+
     // Partikel
-    for(const pt of particles){ pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.18; pt.life--; }
+    for(const pt of particles){pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.12;pt.life--;}
 
     // Aufräumen
-    obstacles = obstacles.filter(o=>!o.dead && o.x>-60);
-    projectiles = projectiles.filter(p=>!p.dead && p.x<W+40);
-    pickups = pickups.filter(p=>!p.dead && p.x>-40);
-    particles = particles.filter(p=>p.life>0);
+    enemies=enemies.filter(e=>!e.dead&&e.x>-50);
+    shots=shots.filter(s=>!s.dead&&s.x<W+30);
+    eShots=eShots.filter(s=>!s.dead&&s.x>-30&&s.y>-30&&s.y<H+30);
+    pickups=pickups.filter(p=>!p.dead&&p.x>-40);
+    particles=particles.filter(p=>p.life>0);
 
-    // Punkte fürs Überleben
-    if(frame%6===0){ score++; scoreEl.textContent=score; }
+    if(frame%10===0){score++;el('score').textContent=score;}
   }
 
-  // ---------- Dr. Grünie zeichnen (Vektor, angelehnt an den Comic-Charakter) ----------
-  function drawDoctor(x, y, t){
-    const swing = Math.sin(t)*7;       // Beine
-    const arm = Math.sin(t+Math.PI)*5; // Arme
+  function updateBoss(){
+    const b=boss;b.t++;if(b.hit>0)b.hit--;
+    if(b.entering){
+      b.x+=(W-140-b.x)*0.04;
+      if(Math.abs(b.x-(W-140))<3){b.entering=false;b.x=W-140;}
+      return;
+    }
+    // vertikale Bewegung
+    b.y+=b.dir*1.6;
+    if(b.y<90){b.y=90;b.dir=1;} if(b.y>H-90){b.y=H-90;b.dir=-1;}
+    // Berührung schadet
+    if(player.flash<=0 && dist2(b.x,b.y,player.x,player.y)<(b.r+player.r*0.6)**2)hurtPlayer();
+
+    // Muster
+    b.fireT--;
+    if(b.pattern==='beat'){
+      if(b.fireT<=0){ bossShot(0); if(b.t%2===0)bossShot(0.18); b.fireT=42; }
+    }else if(b.pattern==='spawn'){
+      if(b.fireT<=0){ bossShot(0);
+        if(enemies.length<5){ const y=80+Math.random()*(H-160);
+          enemies.push({x:b.x-40,y,r:16,hp:1,emoji:'🦠',color:b.color,base:y,amp:30,ph:Math.random()*7,sp:3+Math.random(),shooter:false,fireT:999}); }
+        b.fireT=70; }
+    }else if(b.pattern==='spread'){
+      if(b.fireT<=0){ for(let k=-2;k<=2;k++)bossShot(k*0.22); b.fireT=70; }
+    }else if(b.pattern==='teleport'){
+      if(b.fireT<=0){ bossShot(0);bossShot(0.3);bossShot(-0.3); b.fireT=55; }
+      if(b.t%120===0){ b.y=80+Math.random()*(H-160); burst(b.x,b.y,b.color,16); }
+    }
+  }
+  function bossShot(spreadOffset){
+    const a=Math.atan2(player.y-boss.y,player.x-boss.x)+spreadOffset;
+    eShots.push({x:boss.x-30,y:boss.y,vx:Math.cos(a)*4.6,vy:Math.sin(a)*4.6,r:9,color:boss.color});
+    beep(300,.05,'square',.03);
+  }
+  function defeatBoss(){
+    burst(boss.x,boss.y,boss.color,40);score+=300;
+    beep(660,.3,'triangle',.06);boss=null;hideBoss();
+    if(levelIdx>=LEVELS.length-1){ gameOver(true); return; }
+    levelIdx++;phase='wave';waveKills=0;waveTarget=8+levelIdx*2;
+    eShots=[];enemies=[];updateHud();
+    showBanner('✅ Besiegt! Level '+(levelIdx+1)+' · '+LEVELS[levelIdx].name,2200);
+  }
+
+  // ================= ZEICHNEN: Dr. Grünie (fliegender Held, nach rechts) =================
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+  }
+  function drawHero(cx,cy,t){
+    const fly=Math.sin(t)*4;
     ctx.save();
-    ctx.translate(x, y);               // y = Fußlinie
-    ctx.lineWidth=3; ctx.strokeStyle=C.ink; ctx.lineJoin='round';
+    ctx.translate(cx,cy+fly);
+    ctx.scale(1.18,1.18);          // Gesamtgröße
+    ctx.lineWidth=2.4;ctx.strokeStyle=COL.ink;ctx.lineJoin='round';ctx.lineCap='round';
 
-    // --- Beine (dunkle Hose) ---
-    ctx.fillStyle=C.ink;
-    ctx.fillRect(8, -22, 11, 22+swing);          // hinteres Bein
-    ctx.fillRect(24, -22, 11, 22-swing);         // vorderes Bein
+    const flap=Math.sin(t*1.3)*5;
+
+    // --- Kittel-Schöße hinten (wehen nach links) ---
+    ctx.fillStyle=COL.coat;
+    ctx.beginPath();
+    ctx.moveTo(-6,2);
+    ctx.quadraticCurveTo(-30,-2+flap,-40,10+flap);
+    ctx.quadraticCurveTo(-28,12,-6,14);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-4,8);
+    ctx.quadraticCurveTo(-26,16-flap,-34,26-flap);
+    ctx.quadraticCurveTo(-20,24,-4,18);
+    ctx.closePath();ctx.fill();ctx.stroke();
+
+    // --- Beine hinten (dunkle Hose, nach links/hinten gestreckt) ---
+    ctx.strokeStyle=COL.ink;ctx.lineWidth=8;ctx.lineCap='round';
+    ctx.strokeStyle=COL.ink;
+    ctx.beginPath();ctx.moveTo(-2,14);ctx.lineTo(-22,22+flap*0.5);ctx.stroke(); // bein 1
+    ctx.beginPath();ctx.moveTo(-2,18);ctx.lineTo(-20,30-flap*0.5);ctx.stroke(); // bein 2
     // Schuhe
-    ctx.fillStyle=C.shoe;
-    roundRect(2, -4+swing, 22, 10, 5, true, true);
-    roundRect(22, -4-swing, 24, 10, 5, true, true);
+    ctx.fillStyle=COL.shoe;ctx.lineWidth=2;
+    ctx.beginPath();ctx.ellipse(-24,22+flap*0.5,7,4,-0.3,0,7);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.ellipse(-22,30-flap*0.5,7,4,-0.3,0,7);ctx.fill();ctx.stroke();
 
-    // --- Arztkittel (Körper) ---
-    ctx.fillStyle=C.coat;
-    roundRect(4, -64, 38, 44, 8, true, true);    // Kittel
-    // Grüner Saum & Knöpfe -> "Grünie"
-    ctx.fillStyle=C.green; ctx.fillRect(4,-26,38,6);
-    ctx.fillStyle=C.green;
-    for(let i=0;i<3;i++){ ctx.beginPath(); ctx.arc(23,-54+i*11,2.2,0,7); ctx.fill(); }
-    // Kragen
-    ctx.fillStyle=C.coat; ctx.beginPath();
-    ctx.moveTo(18,-64); ctx.lineTo(23,-56); ctx.lineTo(28,-64); ctx.stroke();
-
+    // --- Körper / Arztkittel ---
+    ctx.lineWidth=2.4;ctx.strokeStyle=COL.ink;
+    ctx.fillStyle=COL.coat;
+    ctx.beginPath();ctx.ellipse(2,4,20,18,-0.15,0,7);ctx.fill();ctx.stroke();
+    // Kittel-Öffnung (grüner Streifen) + Knöpfe
+    ctx.strokeStyle=COL.green;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(8,-10);ctx.lineTo(2,20);ctx.stroke();
+    ctx.fillStyle=COL.green;
+    for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(7-i*2,-4+i*8,1.8,0,7);ctx.fill();}
+    // Kragen V
+    ctx.fillStyle=COL.coat;ctx.strokeStyle=COL.ink;ctx.lineWidth=2.2;
+    ctx.beginPath();ctx.moveTo(6,-12);ctx.lineTo(12,-4);ctx.lineTo(16,-12);ctx.stroke();
     // Stethoskop (grün)
-    ctx.strokeStyle=C.greenD; ctx.lineWidth=2.4; ctx.beginPath();
-    ctx.moveTo(18,-62); ctx.quadraticCurveTo(14,-44,24,-40);
-    ctx.quadraticCurveTo(34,-44,30,-62); ctx.stroke();
-    ctx.fillStyle=C.greenD; ctx.beginPath(); ctx.arc(24,-39,3.2,0,7); ctx.fill();
-    ctx.strokeStyle=C.ink; ctx.lineWidth=3;
+    ctx.strokeStyle=COL.greenD;ctx.lineWidth=2.2;
+    ctx.beginPath();ctx.moveTo(7,-11);ctx.quadraticCurveTo(0,6,9,10);
+    ctx.quadraticCurveTo(18,6,15,-11);ctx.stroke();
+    ctx.fillStyle=COL.greenD;ctx.beginPath();ctx.arc(9,11,3,0,7);ctx.fill();
 
-    // --- Arm mit Daumen-hoch (vorne) ---
-    ctx.fillStyle=C.coat;
-    roundRect(34, -60+arm, 12, 20, 6, true, true);
-    ctx.fillStyle=C.skin; ctx.beginPath(); ctx.arc(44,-58+arm,6,0,7); ctx.fill(); ctx.stroke();
-    // Daumen
-    ctx.beginPath(); ctx.moveTo(44,-64+arm); ctx.lineTo(44,-70+arm); ctx.stroke();
+    // --- Vorderer Arm + Faust nach vorn (rechts) – Medizin-Quelle ---
+    ctx.fillStyle=COL.coat;ctx.strokeStyle=COL.ink;ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.moveTo(14,-4);
+    ctx.quadraticCurveTo(30,-8,40,-2);
+    ctx.lineTo(40,8);ctx.quadraticCurveTo(28,8,14,8);ctx.closePath();ctx.fill();ctx.stroke();
+    // Manschette
+    ctx.strokeStyle=COL.green;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(36,-3);ctx.lineTo(36,7);ctx.stroke();
+    // Faust (Haut)
+    ctx.fillStyle=COL.skin;ctx.strokeStyle=COL.ink;ctx.lineWidth=2.2;
+    ctx.beginPath();ctx.arc(43,3,6,0,7);ctx.fill();ctx.stroke();
 
-    // --- Kopf ---
-    ctx.fillStyle=C.skin;
-    ctx.beginPath(); ctx.ellipse(23,-78,16,15,0,0,7); ctx.fill(); ctx.stroke();
-    // Haare (dunkel, lockig)
-    ctx.fillStyle=C.ink; ctx.beginPath();
-    ctx.moveTo(8,-80);
-    ctx.bezierCurveTo(6,-98, 20,-100, 23,-94);
-    ctx.bezierCurveTo(27,-101, 40,-97, 37,-80);
-    ctx.bezierCurveTo(34,-88, 30,-88, 27,-86);
-    ctx.bezierCurveTo(24,-90, 20,-90, 18,-86);
-    ctx.bezierCurveTo(14,-88, 11,-86, 8,-80);
-    ctx.closePath(); ctx.fill();
-    // Ohr
-    ctx.fillStyle=C.skin; ctx.beginPath(); ctx.arc(8,-76,3.5,0,7); ctx.fill(); ctx.stroke();
+    // --- Kopf (nach rechts blickend) ---
+    const hx=14,hy=-26;
+    ctx.fillStyle=COL.skin;ctx.strokeStyle=COL.ink;ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.ellipse(hx,hy,15,14,0,0,7);ctx.fill();ctx.stroke();
+    // Ohr (hinten links)
+    ctx.beginPath();ctx.arc(hx-12,hy+1,3.4,0,7);ctx.fill();ctx.stroke();
+    // Haare (dunkel, wellig mit Locken-Spitzen)
+    ctx.fillStyle=COL.hair;
+    ctx.beginPath();
+    ctx.moveTo(hx-15,hy-2);
+    ctx.bezierCurveTo(hx-20,hy-20,hx-6,hy-24,hx-3,hy-17);
+    ctx.bezierCurveTo(hx-1,hy-24,hx+8,hy-24,hx+9,hy-15);
+    ctx.bezierCurveTo(hx+13,hy-20,hx+18,hy-14,hx+15,hy-6);
+    ctx.bezierCurveTo(hx+13,hy-12,hx+9,hy-12,hx+7,hy-9);
+    ctx.bezierCurveTo(hx+4,hy-14,hx-1,hy-14,hx-3,hy-9);
+    ctx.bezierCurveTo(hx-6,hy-13,hx-10,hy-12,hx-12,hy-7);
+    ctx.bezierCurveTo(hx-14,hy-9,hx-15,hy-6,hx-15,hy-2);
+    ctx.closePath();ctx.fill();
+    // Koteletten
+    ctx.beginPath();ctx.moveTo(hx-13,hy-3);ctx.lineTo(hx-13,hy+3);ctx.lineTo(hx-10,hy+2);ctx.closePath();ctx.fill();
     // Auge
-    ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(26,-80,2.6,0,7); ctx.fill();
+    ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(hx+6,hy-2,2.4,0,7);ctx.fill();
     // Augenbraue
-    ctx.beginPath(); ctx.moveTo(22,-86); ctx.quadraticCurveTo(27,-89,30,-86); ctx.stroke();
-    // Nase
-    ctx.fillStyle=C.skin; ctx.beginPath(); ctx.arc(33,-77,4,0,7); ctx.fill(); ctx.stroke();
-    // Lächeln
-    ctx.beginPath(); ctx.arc(28,-74,7,0.15,1.25); ctx.stroke();
+    ctx.lineWidth=1.8;ctx.strokeStyle=COL.ink;
+    ctx.beginPath();ctx.moveTo(hx+2,hy-7);ctx.quadraticCurveTo(hx+7,hy-10,hx+11,hy-7);ctx.stroke();
+    // Nase (groß, rund, rechts)
+    ctx.fillStyle=COL.skin;ctx.lineWidth=2.2;
+    ctx.beginPath();ctx.arc(hx+14,hy+2,4.2,0,7);ctx.fill();ctx.stroke();
+    // Großes Lächeln
+    ctx.lineWidth=2;ctx.strokeStyle=COL.ink;
+    ctx.beginPath();ctx.arc(hx+7,hy+4,7,0.05,1.25);ctx.stroke();
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(hx+9,hy+6,4,0.1,1.1);ctx.lineTo(hx+9,hy+6);ctx.closePath();ctx.fill();
 
     ctx.restore();
   }
 
-  function roundRect(x,y,w,h,r,fill,stroke){
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);
-    ctx.arcTo(x+w,y,x+w,y+h,r);
-    ctx.arcTo(x+w,y+h,x,y+h,r);
-    ctx.arcTo(x,y+h,x,y,r);
-    ctx.arcTo(x,y,x+w,y,r);
-    ctx.closePath();
-    if(fill) ctx.fill();
-    if(stroke) ctx.stroke();
-  }
-
-  // ---------- Render ----------
+  // ---- Render ----
   function draw(){
-    ctx.clearRect(0,0,W,H);
+    // Weltraum-Hintergrund
+    ctx.fillStyle='#10131c';ctx.fillRect(0,0,W,H);
+    for(const s of stars){ctx.globalAlpha=0.4+s.z*0.4;ctx.fillStyle='#cfe3ff';
+      ctx.fillRect(s.x,s.y,s.s,s.s);}
+    ctx.globalAlpha=1;
 
-    // Hintergrund-Hügel (level-farbig getönt)
-    const lv = LEVELS[levelIdx||0];
-    ctx.fillStyle = 'rgba(46,139,87,.12)';
-    ctx.beginPath();
-    const o=(frame*0.6)% 200;
-    for(let i=-1;i<6;i++){ const bx=i*200-o; ctx.moveTo(bx,GROUND);
-      ctx.arc(bx+100,GROUND,90,Math.PI,0); }
-    ctx.fill();
-
-    // Boden
-    ctx.strokeStyle=C.ink; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(0,GROUND); ctx.lineTo(W,GROUND); ctx.stroke();
-    // Boden-Striche (Bewegung)
-    ctx.lineWidth=2;
-    for(let i=0;i<W/40+1;i++){
-      const dx=(i*40-(frame*speed)%40);
-      ctx.beginPath(); ctx.moveTo(dx,GROUND+10); ctx.lineTo(dx+14,GROUND+10); ctx.stroke();
-    }
+    ctx.textAlign='center';ctx.textBaseline='middle';
 
     // Pickups
-    ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    for(const pk of pickups){
-      ctx.fillText(pk.emoji, pk.x, pk.y+Math.sin(frame*0.1+pk.bob)*3);
-    }
+    ctx.font='28px serif';
+    for(const p of pickups)ctx.fillText(p.emoji,p.x,p.y+Math.sin(frame*0.1+p.bob)*3);
 
-    // Hindernisse (Krankheiten) – mit pulsierendem "Aura"-Ring
-    for(const ob of obstacles){
-      ctx.save();
-      ctx.globalAlpha = ob.hit? .5:1;
-      ctx.beginPath();
-      ctx.fillStyle = ob.color+'33';
-      const pr = ob.w/2 + 4 + Math.sin(frame*0.2)*2;
-      ctx.arc(ob.x+ob.w/2, ob.y-ob.h/2, pr, 0, 7); ctx.fill();
-      ctx.font='38px serif';
-      ctx.fillText(ob.emoji, ob.x+ob.w/2, ob.y-ob.h/2);
+    // Gegner
+    for(const e of enemies){
+      ctx.save();ctx.globalAlpha=e.dead?.4:1;
+      ctx.fillStyle=e.color+'33';ctx.beginPath();
+      ctx.arc(e.x,e.y,e.r+4+Math.sin(frame*0.2)*2,0,7);ctx.fill();
+      ctx.font=(e.r*1.9|0)+'px serif';ctx.fillText(e.emoji,e.x,e.y);
       ctx.restore();
     }
 
-    // Projektile (Medizin/Pillen)
-    for(const p of projectiles){
-      ctx.font='20px serif';
-      ctx.fillText('💊', p.x, p.y);
+    // Boss
+    if(boss){
+      ctx.save();
+      ctx.fillStyle=boss.color+'33';ctx.beginPath();
+      ctx.arc(boss.x,boss.y,boss.r+8+Math.sin(frame*0.15)*4,0,7);ctx.fill();
+      if(boss.hit>0){ctx.shadowColor='#fff';ctx.shadowBlur=20;}
+      ctx.font=(boss.r*1.9|0)+'px serif';ctx.fillText(boss.emoji,boss.x,boss.y);
+      ctx.restore();
+    }
+
+    // Spieler-Schüsse (Pillen)
+    ctx.font='18px serif';
+    for(const s of shots)ctx.fillText('💊',s.x,s.y);
+
+    // Gegner-Schüsse
+    for(const s of eShots){
+      ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(s.x-2,s.y-2,s.r*0.4,0,7);ctx.fill();
     }
 
     // Partikel
-    for(const pt of particles){
-      ctx.globalAlpha = Math.max(0, pt.life/30);
-      ctx.fillStyle = pt.color;
-      ctx.fillRect(pt.x, pt.y, 4, 4);
-      ctx.globalAlpha = 1;
-    }
+    for(const pt of particles){ctx.globalAlpha=Math.max(0,pt.life/30);ctx.fillStyle=pt.color;
+      ctx.fillRect(pt.x,pt.y,4,4);}
+    ctx.globalAlpha=1;
 
-    // Spieler (blinkt bei Treffer)
+    // Held (blinkt bei Treffer)
     if(!(player.flash>0 && Math.floor(frame/4)%2)){
-      drawDoctor(player.x, player.y, player.run);
+      // kleiner Antriebs-Schein hinten
+      ctx.fillStyle='rgba(127,224,168,'+(0.3+Math.random()*0.3)+')';
+      ctx.beginPath();ctx.ellipse(player.x-34,player.y+14,8+Math.random()*4,4,0,0,7);ctx.fill();
+      drawHero(player.x,player.y,player.bob);
     }
   }
 
-  // ---------- Loop ----------
-  function loop(){
-    if(state==='playing'){ update(); }
-    draw();
-    requestAnimationFrame(loop);
-  }
+  function loop(){ if(state==='playing')update(); draw(); requestAnimationFrame(loop); }
   loop();
-
-  // Idle-Anzeige im Menü
-  player.run = 0;
 })();
 </script>
 </body>
