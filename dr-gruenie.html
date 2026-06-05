@@ -71,7 +71,7 @@
     <canvas id="cv" width="800" height="500"></canvas>
 
     <div id="hud" class="hidden">
-      <div><span id="score">0</span> Pkt</div>
+      <div><span id="score">0</span> Pkt<br><span id="weapon" style="color:#7fe0a8;font-size:.82em">💊 Lv1</span></div>
       <div id="levelTag">Level 1</div>
       <div id="lives">❤️❤️❤️</div>
     </div>
@@ -134,7 +134,8 @@
 
   let state='menu'; // menu | playing | over | win
   let phase='wave'; // wave | boss
-  let score=0, lives=3, levelIdx=0, frame=0;
+  let score=0, lives=3, levelIdx=0, frame=0, weaponLevel=1;
+  const MAXLIVES=5, MAXWEAPON=4;
   let spawnTimer=70, pickupTimer=300, fireCD=0, waveKills=0, waveTarget=8;
   let enemies=[], shots=[], eShots=[], pickups=[], particles=[], stars=[];
   let boss=null;
@@ -168,7 +169,7 @@
   }
 
   function start(){
-    score=0;lives=3;levelIdx=0;frame=0;phase='wave';
+    score=0;lives=3;levelIdx=0;frame=0;phase='wave';weaponLevel=1;
     spawnTimer=50;pickupTimer=300;fireCD=0;waveKills=0;waveTarget=8;
     enemies=[];shots=[];eShots=[];pickups=[];particles=[];boss=null;
     player.x=player.tx=120;player.y=player.ty=H/2;player.flash=0;
@@ -184,6 +185,7 @@
   function updateHud(){
     el('score').textContent=score;
     el('lives').textContent='❤️'.repeat(Math.max(0,lives))||'💔';
+    el('weapon').textContent='💊 Lv'+weaponLevel;
     el('levelTag').textContent='Level '+(levelIdx+1)+' · '+LEVELS[levelIdx].name;
   }
   function showBoss(){ bossbar.style.display='block';bossnameEl.style.display='block';
@@ -233,7 +235,13 @@
       shooter:Math.random()<0.35, fireT:60+Math.random()*60 });
   }
   function spawnPickup(){
-    pickups.push({ x:W+20,y:50+Math.random()*(H-100),r:15,emoji:'🍏',bob:Math.random()*7,sp:2.4 });
+    // gewichtete Drops: 🍏 Punkte (häufig) · ⚡ Waffe (mittel) · ❤️ Extra-Leben (selten)
+    const rnd=Math.random();
+    let type,emoji;
+    if(rnd<0.20 && lives<MAXLIVES){ type='life';emoji='❤️'; }
+    else if(rnd<0.55){ type='weapon';emoji='⚡'; }
+    else { type='apple';emoji='🍏'; }
+    pickups.push({ x:W+20,y:50+Math.random()*(H-100),r:15,emoji,type,bob:Math.random()*7,sp:2.4 });
   }
   function makeBoss(){
     const b=LEVELS[levelIdx].boss;
@@ -243,9 +251,20 @@
   }
 
   function playerFire(){
-    shots.push({ x:player.x+30,y:player.y-6,r:8,sp:11 });
+    const x=player.x+30, y=player.y-6;
+    if(weaponLevel>=3){            // Dreifach-Streuung
+      shots.push({x,y,r:8,sp:11,vy:0});
+      shots.push({x,y,r:8,sp:11,vy:-2.6});
+      shots.push({x,y,r:8,sp:11,vy:2.6});
+    }else if(weaponLevel===2){     // Doppelschuss
+      shots.push({x,y:y-7,r:8,sp:11,vy:0});
+      shots.push({x,y:y+7,r:8,sp:11,vy:0});
+    }else{                         // Einzelschuss
+      shots.push({x,y,r:8,sp:11,vy:0});
+    }
     beep(880,.05,'triangle',.035);
   }
+  function fireDelay(){ return weaponLevel>=4?7:12; }   // Lv4: höhere Feuerrate
 
   function burst(x,y,color,n=12){
     for(let i=0;i<n;i++){const a=Math.random()*7,s=1+Math.random()*4.5;
@@ -256,6 +275,7 @@
   function hurtPlayer(){
     if(player.flash>0)return;
     lives--;player.flash=80;burst(player.x,player.y,'#e74c3c',16);
+    if(weaponLevel>1)weaponLevel--;   // Waffe sinkt bei Treffer um eine Stufe
     beep(180,.2,'sawtooth',.06);updateHud();
     if(lives<=0)gameOver(false);
   }
@@ -286,7 +306,7 @@
     if(player.flash>0)player.flash--;
 
     // Auto-Feuer
-    if(--fireCD<=0){playerFire();fireCD=12;}
+    if(--fireCD<=0){playerFire();fireCD=fireDelay();}
 
     // Phase: Welle vs. Boss
     if(phase==='wave'){
@@ -314,7 +334,7 @@
     }
     // Spieler-Schüsse
     for(const s of shots){
-      s.x+=s.sp;
+      s.x+=s.sp; s.y+=s.vy||0;
       for(const e of enemies){
         if(!e.dead && dist2(s.x,s.y,e.x,e.y)<(e.r+s.r)**2){
           e.hp--;s.dead=true;burst(s.x,s.y,e.color,5);
@@ -340,10 +360,20 @@
     for(const p of pickups){
       p.x-=p.sp;
       if(dist2(p.x,p.y,player.x,player.y)<(p.r+player.r*0.8)**2){
-        p.dead=true;score+=20;
-        if(lives<3 && Math.random()<0.5){lives++;burst(p.x,p.y,'#e74c3c',14);}
-        else burst(p.x,p.y,COL.green,10);
-        beep(960,.07,'sine',.05);updateHud();
+        p.dead=true;
+        if(p.type==='life'){
+          lives=Math.min(MAXLIVES,lives+1);score+=10;
+          burst(p.x,p.y,'#e74c3c',16);beep(1040,.12,'sine',.05);
+          showBanner('❤️ Extra-Leben!',1200);
+        }else if(p.type==='weapon'){
+          score+=15;
+          if(weaponLevel<MAXWEAPON){ weaponLevel++; showBanner('⚡ Waffe verstärkt: Lv'+weaponLevel,1200); }
+          else { score+=50; showBanner('⚡ Max-Waffe! +50',1200); }
+          burst(p.x,p.y,'#7fe0a8',16);beep(720,.1,'square',.05);
+        }else{
+          score+=20;burst(p.x,p.y,COL.green,10);beep(960,.07,'sine',.05);
+        }
+        updateHud();
       }
     }
     // Boss-Logik

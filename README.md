@@ -32,10 +32,19 @@ jeweiligen **Boss** (mit Lebensbalken):
 | Fliegen | Pfeiltasten / `WASD` | Finger/Maus über den Bildschirm ziehen |
 | Schießen 💊 | automatisch | automatisch |
 
-Zerstöre die Krankheiten mit Medizin, weiche dem Gegnerfeuer aus und sammle 🍏 für
-Bonuspunkte (und gelegentliche Heilung). Bei jedem Treffer verlierst du ein ❤️ –
-nach 3 Treffern ist das Spiel vorbei. Besiege alle 4 Bosse, um zu gewinnen.
-Der Bestwert wird lokal im Browser gespeichert.
+Zerstöre die Krankheiten mit Medizin und weiche dem Gegnerfeuer aus. Bei jedem
+Treffer verlierst du ein ❤️ – nach 3 Treffern ist das Spiel vorbei. Besiege alle
+4 Bosse, um zu gewinnen. Der Bestwert wird lokal im Browser gespeichert.
+
+### Power-ups (im Spielverlauf einsammeln)
+| Symbol | Effekt |
+|---|---|
+| 🍏 | Bonuspunkte |
+| ⚡ | **Stärkere Waffe** – Stufe 1→4: Einzel → Doppel → Dreifach-Streuung → höhere Feuerrate |
+| ❤️ | **Extra-Leben** (bis maximal 5) |
+
+Die Waffenstufe wird im HUD angezeigt (`💊 Lv1–4`). Achtung: Wirst du getroffen,
+sinkt die Waffe um eine Stufe – es lohnt sich also, ⚡ regelmäßig einzusammeln.
 
 ### Dateien
 - `dr-gruenie.html` – das komplette Spiel (eine einzige Datei, keine externen Abhängigkeiten)
