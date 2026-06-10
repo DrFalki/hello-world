@@ -36,11 +36,15 @@ Zerstöre die Krankheiten mit Medizin und weiche dem Gegnerfeuer aus. Bei jedem
 Treffer verlierst du ein ❤️ – nach 3 Treffern ist das Spiel vorbei. Besiege alle
 4 Bosse, um zu gewinnen. Der Bestwert wird lokal im Browser gespeichert.
 
+Jedes Level hat ein **eigenes Hintergrund-Thema** (rotes pulsierendes Herz-Feld,
+lila Krebs-Nebel, oranges Zucker-Feld, blauer Demenz-Nebel).
+
 ### Power-ups (im Spielverlauf einsammeln)
 | Symbol | Effekt |
 |---|---|
 | 🍏 | Bonuspunkte |
 | ⚡ | **Stärkere Waffe** – Stufe 1→4: Einzel → Doppel → Dreifach-Streuung → höhere Feuerrate |
+| 🛡️ | **Schutzschild** – blockt ca. 7 Sekunden lang Schaden (blinkt kurz vor Ablauf) |
 | ❤️ | **Extra-Leben** (bis maximal 5) |
 
 Die Waffenstufe wird im HUD angezeigt (`💊 Lv1–4`). Achtung: Wirst du getroffen,
